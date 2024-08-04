@@ -1,6 +1,7 @@
 import { Subscription } from 'rxjs';
 import { LivroService } from './../../service/livro.service';
 import { Component } from '@angular/core';
+import { Livro } from 'src/app/modals/interfaces';
 
 @Component({
   selector: 'app-lista-livros',
@@ -9,18 +10,38 @@ import { Component } from '@angular/core';
 })
 export class ListaLivrosComponent {
 
-  listaLivros: [];
-  campoBusca: string = '';
+  listaLivros: Livro[];
+  campoBusca: string = ''
   subscription: Subscription
+  livro: Livro
 
-  constructor(private livroService: LivroService) { }
+  constructor(private service: LivroService) { }
 
   buscarLivros() {
-    this.livroService.buscar(this.campoBusca).subscribe({
-      next: retornoAPI => console.log(),
-      error: erro => console.log(erro),
-      complete: () => console.log('Observable completado')
-    });
+    this.subscription = this.service.buscar(this.campoBusca).subscribe({
+      next: (items) => {
+        this.listaLivros = this.livrosResultadoParaLivros(items)
+      },
+      error: erro => console.error(erro),
+    })
+  }
+
+  livrosResultadoParaLivros(items): Livro[] {
+    const livros: Livro[] = []
+
+    items.forEach(item => {
+      livros.push(this.livro = {
+        title: item.volumeInfo?.title,
+        authors: item.volumeInfo?.authors,
+        publisher: item.volumeInfo?.publisher,
+        publishedDate: item.volumeInfo?.publishedDate,
+        description: item.volumeInfo?.description,
+        previewLink: item.volumeInfo?.previewLink,
+        thumbnail: item.volumeInfo?.imageLinks?.thumbnail
+      })
+    })
+
+    return livros
   }
 
   ngOnDestroy() {
